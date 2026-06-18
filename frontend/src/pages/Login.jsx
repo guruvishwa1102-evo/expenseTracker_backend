@@ -1,22 +1,42 @@
 import { useState } from 'react';
-// 1. Import useNavigate
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   
-  // 2. Initialize navigate
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     
-    // Placeholder for your backend API call
-    console.log("Logging in with:", { email, password });
-    
-    // 3. Navigate to the tracker page after login
-    navigate('/tracker');
+    try {
+      // 1. Send the email and password to your Render backend
+      const response = await fetch('https://expensetracker-api-nezd.onrender.com/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      // 2. Check if the backend rejected the login (wrong password/email)
+      if (!response.ok) {
+        alert("Login failed: " + (data.error || data.message || "Invalid credentials"));
+        return; // Stop here, do not navigate!
+      }
+
+      // 3. If successful, save the security token and user data locally
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // 4. Finally, navigate to the tracker
+      navigate('/tracker');
+
+    } catch (err) {
+      console.error("Login Error:", err);
+      alert("Could not connect to the server. Please try again.");
+    }
   };
 
   return (
@@ -46,7 +66,7 @@ const Login = () => {
           </div>
           <button 
             type="submit" 
-            className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300"
+            className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300 cursor-pointer"
           >
             Login
           </button>
