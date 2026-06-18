@@ -27,9 +27,26 @@ const Signup = () => {
         return;
       }
 
-      // 3. Success! Let the user know and send them to the Login page
-      alert("Account created successfully! You can now log in.");
-      navigate('/'); 
+      // 3. AUTO-LOGIN & KEYCHAIN LOGIC
+      // If your backend sends back the token and user data on signup, log them in instantly!
+      if (data.token && data.user) {
+        // Set active credentials
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        // 🔐 Save to Multi-Account Keychain
+        let savedAccounts = JSON.parse(localStorage.getItem('savedAccounts')) || [];
+        savedAccounts = savedAccounts.filter(account => account.user.email !== data.user.email);
+        savedAccounts.unshift({ token: data.token, user: data.user });
+        localStorage.setItem('savedAccounts', JSON.stringify(savedAccounts));
+
+        // Send straight to the dashboard
+        navigate('/tracker'); 
+      } else {
+        // Fallback: If your backend doesn't auto-login, send them to the login page
+        alert("Account created successfully! You can now log in.");
+        navigate('/'); 
+      }
 
     } catch (err) {
       console.error("Signup Error:", err);
