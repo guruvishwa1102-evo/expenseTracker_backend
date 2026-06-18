@@ -3,7 +3,7 @@ import { PlusCircle, Trash2, TrendingUp, TrendingDown, DollarSign, Wallet, LogOu
 import { useNavigate } from 'react-router-dom';
 
 export default function Tracker() {
-  // 📊 State is now empty by default, waiting for the database
+  // 📊 State
   const [transactions, setTransactions] = useState([]);
 
   // 📝 Form States
@@ -11,11 +11,14 @@ export default function Tracker() {
   const [amount, setAmount] = useState('');
   const [type, setType] = useState('expense');
   const [category, setCategory] = useState('Food');
+  
   const navigate = useNavigate();
 
+  // 🚪 CLEAN LOGOUT FUNCTION
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Rip up the digital wristband
-    navigate('/login'); // Kick them back to the login page
+    localStorage.removeItem('token'); 
+    localStorage.removeItem('user');
+    navigate('/', { replace: true }); 
   };
 
   // 🌐 FETCH DATA FROM MONGODB ON LOAD
@@ -37,11 +40,10 @@ export default function Tracker() {
 
   const totalBalance = income - expenses;
 
-  // ➕ ADD TRANSACTION TO MONGODB (Upgraded Error Checking)
+  // ➕ ADD TRANSACTION TO MONGODB
   const handleAddTransaction = async (e) => {
     e.preventDefault();
     
-    // 1. Check if fields are empty
     if (!text || !amount) {
       alert("Please enter both a description and an amount!");
       return;
@@ -63,14 +65,12 @@ export default function Tracker() {
       
       const savedData = await response.json();
       
-      // 🚨 NEW: If the database rejects it, show us why!
       if (!response.ok) {
         console.error("Backend Error:", savedData);
         alert("Database Error: " + savedData.error);
         return; 
       }
       
-      // If success, update the screen!
       setTransactions([savedData, ...transactions]);
       setText('');
       setAmount('');
@@ -87,7 +87,6 @@ export default function Tracker() {
         method: 'DELETE'
       });
       
-      // Remove it from the screen
       setTransactions(transactions.filter(t => t._id !== id));
     } catch (err) {
       console.error("Error deleting transaction:", err);
