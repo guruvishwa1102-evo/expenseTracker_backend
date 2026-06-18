@@ -1,13 +1,22 @@
-import  { useState } from 'react';
+import { useState } from 'react';
+// 1. Import useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  // 2. Initialize navigate
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // Placeholder for your backend API call
     console.log("Logging in with:", { email, password });
-    // Add your auth logic here
+    
+    // 3. Navigate to the tracker page after login
+    navigate('/tracker');
   };
 
   return (
@@ -19,6 +28,7 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-700">Email Address</label>
             <input 
               type="email" 
+              required
               className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="you@example.com"
               onChange={(e) => setEmail(e.target.value)}
@@ -28,6 +38,7 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <input 
               type="password" 
+              required
               className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
               placeholder="••••••••"
               onChange={(e) => setPassword(e.target.value)}
@@ -41,7 +52,7 @@ const Login = () => {
           </button>
         </form>
         <p className="text-center text-sm text-gray-600 mt-6">
-          Don't have an account? <a href="/signup" className="text-indigo-600 font-semibold">Sign up</a>
+          Don't have an account? <span onClick={() => navigate('/signup')} className="text-indigo-600 font-semibold cursor-pointer hover:underline">Sign up</span>
         </p>
       </div>
     </div>
