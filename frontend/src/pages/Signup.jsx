@@ -10,9 +10,31 @@ const Signup = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    console.log("Signing up:", { name, email, password });
-    // After successful signup, redirect to login so they can log in
-    navigate('/'); 
+    
+    try {
+      // 1. Send the new user data to your Render backend
+      const response = await fetch('https://expensetracker-api-nezd.onrender.com/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await response.json();
+
+      // 2. Check if the database rejected it (e.g., email already exists)
+      if (!response.ok) {
+        alert("Signup failed: " + (data.error || data.message || "Please try again"));
+        return;
+      }
+
+      // 3. Success! Let the user know and send them to the Login page
+      alert("Account created successfully! You can now log in.");
+      navigate('/'); 
+
+    } catch (err) {
+      console.error("Signup Error:", err);
+      alert("Could not connect to the server. Please try again.");
+    }
   };
 
   return (
@@ -58,7 +80,7 @@ const Signup = () => {
           
           <button 
             type="submit" 
-            className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition duration-300 shadow-lg shadow-indigo-500/30"
+            className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition duration-300 shadow-lg shadow-indigo-500/30 cursor-pointer"
           >
             Sign Up
           </button>
