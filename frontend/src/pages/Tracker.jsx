@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Tracker() {
   // 📊 State
-  const [transactions, setTransactions] = useState();
+  const [transactions, setTransactions] = useState([]);
 
   // 📝 Form States
   const [text, setText] = useState('');
@@ -23,18 +23,35 @@ export default function Tracker() {
 
   // 🌐 FETCH DATA FROM MONGODB ON LOAD
   useEffect(() => {
-    fetch('https://expensetracker-api-nezd.onrender.com/api/expenses')
+    const token = localStorage.getItem('token'); // Get the security key
+    
+    fetch('https://expensetracker-api-nezd.onrender.com/api/expenses', {
+      headers: {
+        'Authorization': `Bearer ${token}` // Send the key!
+      }
+    })
       .then(res => res.json())
-      .then(data => setTransactions(data))
-      .catch(err => console.error("Error fetching data:", err));
+      .then(data => {
+        // 🛡️ THE SHIELD: Prevent React from crashing if data is weird
+        if (Array.isArray(data)) {
+          setTransactions(data);
+        } else {
+          console.error("Backend refused to send data:", data);
+          setTransactions([]); // Force an empty list
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching data:", err);
+        setTransactions([]);
+      });
   }, []);
 
-  // 🧮 Calculations
-  const income = transactions
+  // 🧮 Calculations (With Safety Nets)
+  const income = (transactions || [])
     .filter(t => t.type === 'income')
     .reduce((acc, t) => acc + t.amount, 0);
 
-  const expenses = transactions
+  const expenses = (transactions || [])
     .filter(t => t.type === 'expense')
     .reduce((acc, t) => acc + t.amount, 0);
 
@@ -57,9 +74,14 @@ export default function Tracker() {
     };
 
     try {
+      const token = localStorage.getItem('token'); // Get the security key
+      
       const response = await fetch('https://expensetracker-api-nezd.onrender.com/api/expenses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Send the key!
+        },
         body: JSON.stringify(newTransaction)
       });
       
@@ -67,7 +89,7 @@ export default function Tracker() {
       
       if (!response.ok) {
         console.error("Backend Error:", savedData);
-        alert("Database Error: " + savedData.error);
+        alert("Database Error: " + (savedData.error || "Unknown error"));
         return; 
       }
       
@@ -83,8 +105,13 @@ export default function Tracker() {
   // ❌ DELETE TRANSACTION FROM MONGODB
   const handleDeleteTransaction = async (id) => {
     try {
+      const token = localStorage.getItem('token'); // Get the security key
+      
       await fetch(`https://expensetracker-api-nezd.onrender.com/api/expenses/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}` // Send the key!
+        }
       });
       
       setTransactions(transactions.filter(t => t._id !== id));
