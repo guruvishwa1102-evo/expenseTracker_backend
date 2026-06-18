@@ -18,14 +18,20 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // 1. Save credentials
+        // 1. Save Active Session
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        // 2. FORCE-SAVE to Keychain
+        // 2. KEYCHAIN LOGIC: Read, Update, and Save to ensure accounts persist
         let savedAccounts = JSON.parse(localStorage.getItem('savedAccounts')) || [];
+        
+        // Remove duplicate entry if it exists to avoid UI clutter
         savedAccounts = savedAccounts.filter(acc => acc.user.email !== data.user.email);
+        
+        // Add new account to the start of the array
         savedAccounts.unshift({ token: data.token, user: data.user });
+        
+        // Save the updated keychain
         localStorage.setItem('savedAccounts', JSON.stringify(savedAccounts));
 
         // 3. Small delay to ensure browser finishes writing to storage
@@ -37,12 +43,12 @@ const Login = () => {
       }
     } catch (err) {
       console.error("Login Error:", err);
-      alert("Server error");
+      alert("Server error: Could not connect to the backend.");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-6 font-sans">
       <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Welcome Back</h2>
         <form onSubmit={handleLogin} className="space-y-6">
