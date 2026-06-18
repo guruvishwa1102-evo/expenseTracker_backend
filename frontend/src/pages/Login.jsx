@@ -9,33 +9,35 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
     try {
-      // 1. Send the email and password to your Render backend
       const response = await fetch('https://expensetracker-api-nezd.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-
       const data = await response.json();
 
-      // 2. Check if the backend rejected the login (wrong password/email)
-      if (!response.ok) {
-        alert("Login failed: " + (data.error || data.message || "Invalid credentials"));
-        return; // Stop here, do not navigate!
+      if (response.ok) {
+        // 1. Save credentials
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        // 2. FORCE-SAVE to Keychain
+        let savedAccounts = JSON.parse(localStorage.getItem('savedAccounts')) || [];
+        savedAccounts = savedAccounts.filter(acc => acc.user.email !== data.user.email);
+        savedAccounts.unshift({ token: data.token, user: data.user });
+        localStorage.setItem('savedAccounts', JSON.stringify(savedAccounts));
+
+        // 3. Small delay to ensure browser finishes writing to storage
+        setTimeout(() => {
+          navigate('/tracker');
+        }, 100); 
+      } else {
+        alert(data.error || "Login failed");
       }
-
-      // 3. If successful, save the security token and user data locally
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      // 4. Finally, navigate to the tracker
-      navigate('/tracker');
-
     } catch (err) {
       console.error("Login Error:", err);
-      alert("Could not connect to the server. Please try again.");
+      alert("Server error");
     }
   };
 
