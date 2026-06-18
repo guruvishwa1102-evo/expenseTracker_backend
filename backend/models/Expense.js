@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const ExpenseSchema = new mongoose.Schema({
+  // 👇 This links the expense to the specific user who created it
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   text: {
     type: String,
     required: [true, 'Please add a description']
