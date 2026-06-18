@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Tracker() {
   // 📊 State
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState();
 
   // 📝 Form States
   const [text, setText] = useState('');
